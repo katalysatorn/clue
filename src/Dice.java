@@ -1,9 +1,11 @@
 import java.util.Random;
 
 public class Dice {
-    private static Random r = new Random();
+    protected final static Random RANDOM = new Random();
 
     static int roll() {
-        return r.nextInt(6);
+        return RANDOM.nextInt(6) + 1;
     }
+
+
 }
