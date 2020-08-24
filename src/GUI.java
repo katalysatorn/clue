@@ -14,8 +14,8 @@ import javax.swing.JPanel;
 import javax.swing.JToolBar;
 import javax.swing.border.EmptyBorder;
 
-public class GUI extends JFrame{
-	
+public class GUI extends JFrame {
+
 	public GUI() {
 		createMenu();
 		createBorder();
@@ -23,8 +23,10 @@ public class GUI extends JFrame{
 		setSize(800, 800);
 		setLocationRelativeTo(null);
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
+
+		this.setVisible(true);
 	}
-	
+
 	private void createMenu() {
 		var menuBar = new JMenuBar();
 		var fileMenu = new JMenu("File");
@@ -44,9 +46,9 @@ public class GUI extends JFrame{
 		menuBar.add(fileMenu);
 		menuBar.add(gameMenu);
 		setJMenuBar(menuBar);
-		
+
 	}
-	
+
 	private void createBorder() {
 		var bottomPanel = new JPanel(new BorderLayout());
 		var topPanel = new JPanel();
@@ -57,12 +59,4 @@ public class GUI extends JFrame{
 		add(bottomPanel);
 		pack();
 	}
-	
-	
-	public static void main(String a[]) {
-
-		EventQueue.invokeLater(() -> {
-			var gui = new GUI();
-			gui.setVisible(true);
-		});
-	}
+}
