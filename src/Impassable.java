@@ -15,7 +15,6 @@ public class Impassable extends Card {
         String s;
         if(showPassable) s = "_";
         else s = "#";
-
         return s;
     }
 }

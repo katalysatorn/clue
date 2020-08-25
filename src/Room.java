@@ -140,4 +140,5 @@ public class Room extends Card {
     public Pair<Integer, Integer> getEntrance(Pair<Integer, Integer> door){ return doors.get(door); }
 
     public Integer getDoorNumber() { return doorNumber;}
+
 }

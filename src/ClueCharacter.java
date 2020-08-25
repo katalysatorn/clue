@@ -1,5 +1,6 @@
 public class ClueCharacter extends Card {
     private Player player = null;
+
     private final Integer order;
     private Pair<Integer, Integer> location;
     private Room room;
@@ -30,4 +31,5 @@ public class ClueCharacter extends Card {
     //public String toString() {
     //    return name;
     //}
+
 }
