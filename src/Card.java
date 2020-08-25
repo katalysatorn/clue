@@ -3,27 +3,32 @@
  */
 abstract class Card {
     protected String name;
+    protected String symbol;
+
+    public Card(String name, String symbol) {
+        this.symbol = symbol;
+        this.name = name;
+    }
+
+    protected Card() { }
 
     /**
      * Name of card entity
      * @return String name
      */
-    private String getName() {
+    public String getName() {
         return name;
     }
 
     /**
-     * Returns a human-readable description of the Card
-     * @return
+     * Name of symbol for board
+     * @return String symbol
      */
-    abstract String getDescription();
+    public String getSymbol() { return symbol;}
 
-    /**
-     * Returns a char version of the card for use inside the map
-     * TODO - Fix names with same first letter
-     * @return
-     */
-    char getCharRep() {
-        return name.charAt(0);
-    }
+   // /**
+   // * @return a human-readable description of the Card
+   //  */
+   // abstract String getDescription();
+
 }
