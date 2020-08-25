@@ -1,15 +1,12 @@
 public class Weapon extends Card {
     public Room room;
-    public Weapon(String name) {
-        this.name = name;
-    }
+    private Pair<Integer, Integer> location;
 
-    public void setRoom(Room r){
+    public Weapon(String name, String symbol) { super(name,symbol); }
+
+    public void setLocation(Pair<Integer, Integer> l) { location = l; }
+    public void setRoom(Room r) {
         room = r;
     }
 
-    @Override
-    public String getDescription() {
-        return "A " + name;
-    }
 }
