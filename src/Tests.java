@@ -3,7 +3,7 @@ import org.junit.jupiter.api.Test;
 
 public class Tests {
     @Test
-    public void testDice() {
+    void testDice() {
         final int times = 1000;
 
         for (int i = 0; i < times; i++) {
@@ -13,3 +13,4 @@ public class Tests {
         }
     }
 }
+
