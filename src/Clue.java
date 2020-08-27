@@ -7,9 +7,9 @@ public class Clue {
     /**
      * Cards
      */
-    private static final ArrayList<Weapon> weapons = new ArrayList<>();
-    private static final ArrayList<Room> rooms = new ArrayList<>();
-    private static final ArrayList<ClueCharacter> characters = new ArrayList<>();
+    protected static final ArrayList<Weapon> weapons = new ArrayList<>();
+    protected static final ArrayList<Room> rooms = new ArrayList<>();
+    protected static final ArrayList<ClueCharacter> characters = new ArrayList<>();
     /**
      * PlayerInfo
      */
@@ -23,6 +23,7 @@ public class Clue {
     private static final Random randomize = new Random(); // For shuffling purposes
     private static final Queue<ClueCharacter> characterOrder = new ArrayDeque<>();
     private static final Queue<Player> playOrder = new ArrayDeque<>();
+    protected static Player currentPlayer;
     static Card[][] board = new Card[24][25];
     private static GUI ux;
     private static ArrayList<ClueCharacter> allCharacters = new ArrayList<>();
@@ -93,6 +94,24 @@ public class Clue {
         distributeCards(deck);
 
         placeCards();
+
+        while (!playOrder.isEmpty()) {
+            if (round()) break;
+        }
+    }
+
+    public static boolean round() {
+        GUI.suggestionBtn.setEnabled(currentPlayer.getCurrentRoom() != null);
+
+        while (!ux.isNextTurn) {
+            // This is where the current players turn goes.
+        }
+
+        // This is what happens after the player clicks the end of their turn
+
+        if (currentPlayer.canStillPlay()) playOrder.offer(currentPlayer);
+        currentPlayer = playOrder.poll();
+        return false;
     }
 
     /**

@@ -14,7 +14,6 @@ public class Suggestion {
         this.weapon = weapon;
         this.character = character;
         this.room = room;
-
     }
 
     /**
@@ -71,5 +70,9 @@ public class Suggestion {
 
     public Weapon getWeapon() {
         return weapon;
+    }
+
+    public String getDescription() {
+        return character.getName() + " committed the murder using a " + weapon.getName() + " in the " + room.getName();
     }
 }
