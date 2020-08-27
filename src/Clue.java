@@ -6,20 +6,17 @@ public class Clue {
     private static final int MAX_PLAYERS = 6;
     private static Suggestion gameSolution;
     private static GUI ux;
-
-    /*      Cards       */
-    public static final ArrayList<Weapon> weapons = new ArrayList<>();
-    public static final ArrayList<Room> rooms = new ArrayList<>();
-    private static final ArrayList<ClueCharacter> characters = new ArrayList<>(); //Temporary
-    public static ArrayList<ClueCharacter> allCharacters = new ArrayList<>();
-
-    /*      PlayerInfo      */
+    protected static final ArrayList<Weapon> weapons = new ArrayList<>();
+    protected static final ArrayList<Room> rooms = new ArrayList<>();
+    protected static final ArrayList<ClueCharacter> characters = new ArrayList<>();
+    /**
+     * PlayerInfo
+     */
     private static final ArrayList<Player> players = new ArrayList<>();
 
     /*      Gaming Order    */
     private static final Queue<ClueCharacter> characterOrder = new ArrayDeque<>();
     private static final Queue<Player> playOrder = new ArrayDeque<>();
-
 
     /**
      * TODO - Main Clue event loop
@@ -90,6 +87,25 @@ public class Clue {
         deck.addAll(roomCards);
         Collections.shuffle(deck);
         distributeCards(deck);
+        placeCards();
+
+        while (!playOrder.isEmpty()) {
+            if (round()) break;
+        }
+    }
+
+    public static boolean round() {
+        GUI.suggestionBtn.setEnabled(currentPlayer.getCurrentRoom() != null);
+
+        while (!ux.isNextTurn) {
+            // This is where the current players turn goes.
+        }
+
+        // This is what happens after the player clicks the end of their turn
+
+        if (currentPlayer.canStillPlay()) playOrder.offer(currentPlayer);
+        currentPlayer = playOrder.poll();
+        return false;
     }
 
     /**
