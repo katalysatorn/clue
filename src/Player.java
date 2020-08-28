@@ -16,8 +16,8 @@ public class Player {
     protected Card refuteCard;
 
     public Player(String name, ClueCharacter character, Integer number) {
-        clueCharacter = character;
         this.name = name;
+        clueCharacter = character;
         playerNumber = number;
     }
 
@@ -33,7 +33,7 @@ public class Player {
     public ClueCharacter getClueCharacter() { return clueCharacter; }
     public String getHand() {
         StringBuilder cards = new StringBuilder("Your cards:\n");
-        for (Card c : hand) cards.append("[").append(c.name).append("] ");
+        for (Card c : hand) cards.append("[").append(c.getName()).append("] ");
         return cards.toString();
     }
     public Integer getPlayerNumber() {return playerNumber;}

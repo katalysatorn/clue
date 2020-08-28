@@ -6,7 +6,7 @@ public class Room extends Card {
     Pair<Integer, Integer> TLSquare;  // top left square, to determine where to start placing the room on the board
 
     public Room(String roomName, Pair<Integer, Integer> TLSquare) {
-        this.name = roomName;
+        super(roomName);
         this.TLSquare = TLSquare;
     }
 
@@ -41,9 +41,9 @@ public class Room extends Card {
     @Override
     public String getDescription() {
         if (weapon == null) {
-            return "You've entered the " + name + " room, there's nothing in here.\n";
+            return "You've entered the " + this.getName() + " room, there's nothing in here.\n";
         } else {
-            return "You've entered the " + name + " room, you see a " + weapon.getDescription() + ".\n";
+            return "You've entered the " + this.getName() + " room, you see a " + weapon.getDescription() + ".\n";
         }
     }
 }

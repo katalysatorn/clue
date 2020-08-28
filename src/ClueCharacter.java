@@ -3,9 +3,10 @@ public class ClueCharacter extends Card {
     private final Integer order;
     private Pair<Integer, Integer> location;
 
-    public ClueCharacter(String name, int number) {
+    public ClueCharacter(String name, int number, Pair<Integer, Integer> location) {
         super(name);
         order = number;
+        this.location = location;
     }
 
     public Integer getOrder() { return order; }
@@ -35,6 +36,6 @@ public class ClueCharacter extends Card {
 
     @Override
     public String toString() {
-        return name;
+        return this.getName();
     }
 }

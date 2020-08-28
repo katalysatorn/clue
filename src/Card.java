@@ -2,13 +2,14 @@
  * Abstract container class for manipulation on all types of Card
  */
 abstract class Card {
-    protected String name;
+    private final String name;
 
     public Card(String name) {
         this.name = name;
     }
 
     protected Card() {
+        this.name = "";
     }
 
     /**

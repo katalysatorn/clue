@@ -2,14 +2,14 @@ import javax.swing.*;
 import java.util.*;
 
 public class Clue {
-    private static final int MIN_PLAYERS = 2;
-    private static final int MAX_PLAYERS = 6;
     /**
      * Cards
      */
     protected static final ArrayList<Weapon> weapons = new ArrayList<>();
     protected static final ArrayList<Room> rooms = new ArrayList<>();
     protected static final ArrayList<ClueCharacter> characters = new ArrayList<>();
+    private static final int MIN_PLAYERS = 2;
+    private static final int MAX_PLAYERS = 6;
     /**
      * PlayerInfo
      */
@@ -18,9 +18,7 @@ public class Clue {
      * Locations
      */
     private static final Map<Room, Pair<Integer, Integer>> roomLocations = new HashMap<>();
-    private static final Map<ClueCharacter, Pair<Integer, Integer>> charLocations = new HashMap<>();
     private static final ArrayList<Pair<Integer, Integer>> entranceLocations = new ArrayList<>();
-    private static final Random randomize = new Random(); // For shuffling purposes
     private static final Queue<ClueCharacter> characterOrder = new ArrayDeque<>();
     private static final Queue<Player> playOrder = new ArrayDeque<>();
     protected static Player currentPlayer;
@@ -28,7 +26,6 @@ public class Clue {
     private static GUI ux;
     private static ArrayList<ClueCharacter> allCharacters = new ArrayList<>();
     private static Suggestion gameSolution;
-    public Player currentTurn;
 
     /**
      * TODO - Main Clue event loop
@@ -93,24 +90,39 @@ public class Clue {
         Collections.shuffle(deck);
         distributeCards(deck);
 
+        System.out.println("Placing cards on board");
         placeCards();
+        printBoard();
 
-        while (!playOrder.isEmpty()) {
-            if (round()) break;
-        }
+        System.out.println("Game Starting");
+        while (!round());
     }
 
     public static boolean round() {
-        GUI.suggestionBtn.setEnabled(currentPlayer.getCurrentRoom() != null);
-
-        while (!ux.isNextTurn) {
-            // This is where the current players turn goes.
+        if (playOrder.isEmpty()) {
+            return true;
         }
 
-        // This is what happens after the player clicks the end of their turn
+        currentPlayer = playOrder.poll();
+        System.out.println("Current player is: " + currentPlayer.getName());
+        GUI.suggestionBtn.setEnabled(currentPlayer.getCurrentRoom() != null);
+
+        JOptionPane.showConfirmDialog(
+                ux,
+                "Get " + currentPlayer.getName() + " to the screen for their turn",
+                "New Turn",
+                0
+        );
+
+
+        // Pause until nextTurnBtn is clicked
+        while (!ux.isNextTurn);
+
+        // This happens after the next turn button is clicked
+        ux.isNextTurn = false;
 
         if (currentPlayer.canStillPlay()) playOrder.offer(currentPlayer);
-        currentPlayer = playOrder.poll();
+
         return false;
     }
 
@@ -186,13 +198,13 @@ public class Clue {
 
         System.out.print("Characters playing are :\n");
         for (Player p : players) {
-            System.out.printf("\tPlayer %d (%s) %s\n", p.playerNumber, p.name, p.clueCharacter.name);
+            System.out.printf("\tPlayer %d (%s) %s\n", p.playerNumber, p.name, p.clueCharacter.getName());
         }
 
         System.out.print("First player to start is..\nRoll dice..\n");
         int start = order.get(new Random().nextInt(order.size()));  //Random number
         Player player = allCharacters.get(start).player;
-        System.out.printf("~~Player %d (%s): %s~~\n", player.playerNumber, player.name, player.clueCharacter.name);
+        System.out.printf("~~Player %d (%s): %s~~\n", player.playerNumber, player.name, player.clueCharacter.getName());
 
         //Sorts out the character order
         while (playingCharacters.peek().getOrder() != start) {
@@ -257,29 +269,23 @@ public class Clue {
      * Loads Clue Character names and their starting positions into map
      */
     public static void loadCharacters() {
-        characters.add(new ClueCharacter("Miss Scarlett", 0));
+        characters.add(new ClueCharacter("Miss Scarlett", 0, new Pair<>(23, 8)));
         characterOrder.offer(characters.get(characters.size() - 1));
-        charLocations.put(characters.get(characters.size() - 1), new Pair<>(24, 8));
 
-        characters.add(new ClueCharacter("Col Mustard", 1));
+        characters.add(new ClueCharacter("Col Mustard", 1, new Pair<>(17, 1)));
         characterOrder.offer(characters.get(characters.size() - 1));
-        charLocations.put(characters.get(characters.size() - 1), new Pair<>(17, 1));
 
-        characters.add(new ClueCharacter("Mrs White", 2));
+        characters.add(new ClueCharacter("Mrs White", 2, new Pair<>(0, 10)));
         characterOrder.offer(characters.get(characters.size() - 1));
-        charLocations.put(characters.get(characters.size() - 1), new Pair<>(0, 10));
 
-        characters.add(new ClueCharacter("Mr Green", 3));
+        characters.add(new ClueCharacter("Mr Green", 3, new Pair<>(0, 15)));
         characterOrder.offer(characters.get(characters.size() - 1));
-        charLocations.put(characters.get(characters.size() - 1), new Pair<>(0, 15));
 
-        characters.add(new ClueCharacter("Mrs Peacock", 4));
+        characters.add(new ClueCharacter("Mrs Peacock", 4, new Pair<>(6, 23)));
         characterOrder.offer(characters.get(characters.size() - 1));
-        charLocations.put(characters.get(characters.size() - 1), new Pair<>(6, 24));
 
-        characters.add(new ClueCharacter("Prof Plum", 5));
+        characters.add(new ClueCharacter("Prof Plum", 5, new Pair<>(19, 23)));
         characterOrder.offer(characters.get(characters.size() - 1));
-        charLocations.put(characters.get(characters.size() - 1), new Pair<>(19, 24));
     }
 
     /**
@@ -304,15 +310,17 @@ public class Clue {
      * Places room on the board
      */
     public static void placeRooms() {
-        while (roomLocations.entrySet().iterator().hasNext()) {
-            var roomLocation = (Map.Entry<Room, Pair<Integer, Integer>>) roomLocations.entrySet().iterator().next();
-            Room room = roomLocation.getKey();
-            Pair<Integer, Integer> dimension = roomLocation.getValue();
+        for (Map.Entry<Room, Pair<Integer, Integer>> roomPairEntry : roomLocations.entrySet()) {
+            Room room = roomPairEntry.getKey();
+            Pair<Integer, Integer> dimension = roomPairEntry.getValue();
+
             int height = dimension.getOne();
             int width = dimension.getTwo();
+
             int nextRow = room.TLSquare.getOne();  // starting row
             int nextCol = room.TLSquare.getTwo();  // starting column
-            if (room.name.equals("Middle Room")) {  // Middle room can't be accessed
+
+            if (room.getName().equals("Middle Room")) {  // Middle room can't be accessed
                 for (int i = 0; i < height; i++) {
                     for (int j = 0; j < width; j++) {
                         board[nextRow][nextCol] = new Impassable(true);
@@ -339,10 +347,9 @@ public class Clue {
      */
     public static void placeCharacters() {
         for (ClueCharacter c : allCharacters) {
-            int x = c.getLocation().getOne();
-            int y = c.getLocation().getTwo();
+            var loc = c.getLocation();
 
-            board[x][y] = c;
+            board[loc.getOne()][loc.getTwo()] = c;
         }
     }
 
@@ -403,13 +410,13 @@ public class Clue {
      */
     public void makeSolution() {
         // randomly choosing a murder weapon
-        Weapon w = weapons.remove(randomize.nextInt(weapons.size()));
+        Weapon w = weapons.remove(Dice.r.nextInt(weapons.size()));
 
         // randomly choosing a murder room
-        Room r = rooms.remove(randomize.nextInt(rooms.size()));
+        Room r = rooms.remove(Dice.r.nextInt(rooms.size()));
 
         // randomly choosing a murderer
-        ClueCharacter c = characters.remove(randomize.nextInt(characters.size()));
+        ClueCharacter c = characters.remove(Dice.r.nextInt(characters.size()));
 
         gameSolution = new Suggestion(w, c, r);
     }

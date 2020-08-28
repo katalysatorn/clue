@@ -58,6 +58,10 @@ public class GUI extends JFrame {
         });
         suggestionBtn.setEnabled(false);
         var dice = new JMenuItem("Roll Dice");
+        dice.addActionListener(e -> {
+            int roll = Dice.roll();
+            // TODO - Print the dice amount.
+        });
         var nxtTurn = new JMenuItem("Next Turn");
         nxtTurn.addActionListener(e -> {
             isNextTurn = true;
