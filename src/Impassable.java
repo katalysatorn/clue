@@ -4,26 +4,17 @@
 public class Impassable extends Card {
     final boolean showPassable;
 
-    public Impassable() {
-        this.showPassable = false;
-    }
-
     public Impassable(boolean showPassable) {
         this.showPassable = showPassable;
     }
 
-
-    // TODO - Maybe find a better way to handle this
-    @Override
-    String getDescription() {
-        return null;
-    }
+    public boolean getPassable() { return showPassable;}
 
     @Override
-    char getCharRep() {
-        if (showPassable) {
-            return 'E';
-        }
-        return 'X'; // ∅
+    public String toString() {
+        String s;
+        if(showPassable) s = "_";
+        else s = "#";
+        return s;
     }
 }

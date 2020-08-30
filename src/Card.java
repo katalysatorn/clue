@@ -2,15 +2,17 @@
  * Abstract container class for manipulation on all types of Card
  */
 abstract class Card {
-    private final String name;
+    protected String name;
+    protected String symbol;
 
-    public Card(String name) {
+    public Card(String name, String symbol) {
+        this.symbol = symbol;
         this.name = name;
     }
 
     protected Card() {
         this.name = "";
-    }
+}
 
     /**
      * Name of card entity
@@ -21,15 +23,14 @@ abstract class Card {
     }
 
     /**
-     * @return a human-readable description of the Card
+     * Name of symbol for board
+     * @return String symbol
      */
-    abstract String getDescription();
+    public String getSymbol() { return symbol;}
 
-    /**
-     * TODO - Fix names with same first letter
-     * @return a char version of the card for use inside the map
-     */
-    char getCharRep() {
-        return name.charAt(0);
-    }
+   // /**
+   // * @return a human-readable description of the Card
+   //  */
+   // abstract String getDescription();
+
 }

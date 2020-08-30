@@ -7,3 +7,4 @@ public class Dice {
         return r.nextInt(6);
     }
 }
+

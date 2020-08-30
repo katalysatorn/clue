@@ -5,6 +5,10 @@ public class Clue {
     /**
      * Cards
      */
+    private static final int MIN_PLAYERS = 3;
+    private static final int MAX_PLAYERS = 6;
+    private static Suggestion gameSolution;
+    private static GUI ux;
     protected static final ArrayList<Weapon> weapons = new ArrayList<>();
     protected static final ArrayList<Room> rooms = new ArrayList<>();
     protected static final ArrayList<ClueCharacter> characters = new ArrayList<>();
@@ -27,6 +31,10 @@ public class Clue {
     private static ArrayList<ClueCharacter> allCharacters = new ArrayList<>();
     private static Suggestion gameSolution;
 
+    /*      Gaming Order    */
+    private static final Queue<ClueCharacter> characterOrder = new ArrayDeque<>();
+    private static final Queue<Player> playOrder = new ArrayDeque<>()
+
     /**
      * TODO - Main Clue event loop
      * 1. Create Circumstance to be used as solution <character, weapon, room> ()
@@ -48,15 +56,22 @@ public class Clue {
      */
     public static void main(String[] a) {
         ux = new GUI();
-
-        // 0. Load up Arrays
         loadCharacters();
         loadWeapons();
         loadRooms();
-        loadEntrances();
+        Board b = new Board(weapons,rooms,allCharacters);
+        loadGameFormat();
 
+        System.out.print(b.toString());
+    }
+
+    /**
+     * Ask for the number of players and their selectable characters, which will then
+     * create the playing order of the players. Also creates the solution envelope and
+     * distributes the cards to the players
+     */
+    public static void loadGameFormat(){
         // Create temporary collections for Weapon, Room and Character cards
-        allCharacters = new ArrayList<>(characters);
         ArrayList<Weapon> weaponCards = new ArrayList<>(weapons);
         ArrayList<Room> roomCards = new ArrayList<>(rooms);
 
@@ -89,7 +104,6 @@ public class Clue {
         deck.addAll(roomCards);
         Collections.shuffle(deck);
         distributeCards(deck);
-
         System.out.println("Placing cards on board");
         placeCards();
         printBoard();
@@ -134,45 +148,34 @@ public class Clue {
         int numPlayers;
 
         String[] choices = new String[(MAX_PLAYERS - MIN_PLAYERS) + 1];
-        for (int i = MIN_PLAYERS; i <= MAX_PLAYERS; i++) choices[i - 2] = String.valueOf(i);
+        for (int i = MIN_PLAYERS; i <= MAX_PLAYERS; i++) choices[i - 3] = String.valueOf(i);
 
         numPlayers = Integer.parseInt(
-                (String) JOptionPane.showInputDialog(ux,
-                        "",
-                        "Choose how many players",
-                        JOptionPane.PLAIN_MESSAGE,
-                        null,
-                        choices,
-                        choices[0]
-                )
+                (String) JOptionPane.showInputDialog(ux, "", "Choose how many players",
+                        JOptionPane.PLAIN_MESSAGE, null, choices, choices[0])
         );
 
-        ArrayList<ClueCharacter> selectablePlayers = new ArrayList<>();
-        selectablePlayers.addAll(characters);
+        ArrayList<String> selectablePlayers = new ArrayList<>();
+        for(ClueCharacter c : characters) selectablePlayers.add(c.getName());
 
         // Get player names and assign them a character
         for (int i = 0; i < numPlayers; i++) {
             String playerName = "";
-            ClueCharacter chosenCharacter;
 
             while (playerName.equals("")) {
                 playerName = JOptionPane.showInputDialog("Enter name for player " + (i + 1) + ":");
             }
 
-            chosenCharacter =
-                    (ClueCharacter) JOptionPane.showInputDialog(
-                            ux,
-                            "Available:",
-                            "Choose a Character",
-                            0,
-                            null,
-                            selectablePlayers.toArray(),
-                            selectablePlayers.toArray()[0]
-                    );
+            String chosenCharacter = (String) JOptionPane.showInputDialog(ux, "Available:",
+                    "Choose a Character", JOptionPane.QUESTION_MESSAGE,
+                    null, selectablePlayers.toArray(), selectablePlayers.toArray()[0]);
 
             selectablePlayers.remove(chosenCharacter);
-            players.add(new Player(playerName, chosenCharacter, (i + 1)));
-            chosenCharacter.addPlayer(players.get(players.size() - 1));
+            ClueCharacter chosen = null;
+            for(ClueCharacter c : characters) if(c.getName().equals(chosenCharacter)) chosen = c;
+            players.add(new Player(playerName, chosen, (i + 1)));
+            assert chosen != null;
+            chosen.addPlayer(players.get(players.size() - 1));
         }
     }
 
@@ -189,6 +192,7 @@ public class Clue {
             else {
                 ClueCharacter c = characterOrder.poll();
                 playingCharacters.offer(c);
+                assert c != null;
                 order.add(c.getOrder());
             }
         }
@@ -202,18 +206,18 @@ public class Clue {
         }
 
         System.out.print("First player to start is..\nRoll dice..\n");
-        int start = order.get(new Random().nextInt(order.size()));  //Random number
+        int start = order.get(Dice.r.nextInt(order.size()));  //Random number
         Player player = allCharacters.get(start).player;
         System.out.printf("~~Player %d (%s): %s~~\n", player.playerNumber, player.name, player.clueCharacter.getName());
 
         //Sorts out the character order
-        while (playingCharacters.peek().getOrder() != start) {
+        while (Objects.requireNonNull(playingCharacters.peek()).getOrder() != start) {
             ClueCharacter c = playingCharacters.poll();
             playingCharacters.offer(c);
         }
 
         //Sorts out the playing order
-        while (!playingCharacters.isEmpty()) playOrder.offer(playingCharacters.poll().player);
+        while (!playingCharacters.isEmpty()) playOrder.offer(playingCharacters.poll().getPlayer());
     }
 
     /**
@@ -229,75 +233,45 @@ public class Clue {
         }
     }
 
-
     /**
      * Loads room name and dimensions into map
      */
     public static void loadRooms() {
-        rooms.add(new Room("Kitchen", new Pair<>(0, 0)));
-        roomLocations.put(rooms.get(rooms.size() - 1), new Pair<>(7, 7));
-
-        rooms.add(new Room("Ball Room", new Pair<>(0, 9)));
-        roomLocations.put(rooms.get(rooms.size() - 1), new Pair<>(8, 8));
-
-        rooms.add(new Room("Conservatory", new Pair<>(0, 19)));
-        roomLocations.put(rooms.get(rooms.size() - 1), new Pair<>(5, 6));
-
-        rooms.add(new Room("Billiard Room", new Pair<>(8, 19)));
-        roomLocations.put(rooms.get(rooms.size() - 1), new Pair<>(5, 6));
-
-        rooms.add(new Room("Library", new Pair<>(14, 19)));
-        roomLocations.put(rooms.get(rooms.size() - 1), new Pair<>(5, 6));
-
-        rooms.add(new Room("Study", new Pair<>(21, 18)));
-        roomLocations.put(rooms.get(rooms.size() - 1), new Pair<>(3, 7));
-
-        rooms.add(new Room("Hall", new Pair<>(18, 10)));
-        roomLocations.put(rooms.get(rooms.size() - 1), new Pair<>(6, 6));
-
-        rooms.add(new Room("Lounge", new Pair<>(19, 0)));
-        roomLocations.put(rooms.get(rooms.size() - 1), new Pair<>(5, 8));
-
-        rooms.add(new Room("Dining Room", new Pair<>(10, 0)));
-        roomLocations.put(rooms.get(rooms.size() - 1), new Pair<>(6, 9));
-
-        rooms.add(new Room("Middle Room", new Pair<>(10, 11)));
-        roomLocations.put(rooms.get(rooms.size() - 1), new Pair<>(6, 5));
+        rooms.add(new Room("Kitchen","a", 1));
+        rooms.add(new Room("Ball Room","b",2));
+        rooms.add(new Room("Conservatory","c",3));
+        rooms.add(new Room("Billiard Room","d",4));
+        rooms.add(new Room("Library","e",5));
+        rooms.add(new Room("Study","f",6));
+        rooms.add(new Room("Hall","g",7));
+        rooms.add(new Room("Lounge","h",8));
+        rooms.add(new Room("Dining Room","i",9));
     }
 
     /**
      * Loads Clue Character names and their starting positions into map
      */
     public static void loadCharacters() {
-        characters.add(new ClueCharacter("Miss Scarlett", 0, new Pair<>(23, 8)));
-        characterOrder.offer(characters.get(characters.size() - 1));
-
-        characters.add(new ClueCharacter("Col Mustard", 1, new Pair<>(17, 1)));
-        characterOrder.offer(characters.get(characters.size() - 1));
-
-        characters.add(new ClueCharacter("Mrs White", 2, new Pair<>(0, 10)));
-        characterOrder.offer(characters.get(characters.size() - 1));
-
-        characters.add(new ClueCharacter("Mr Green", 3, new Pair<>(0, 15)));
-        characterOrder.offer(characters.get(characters.size() - 1));
-
-        characters.add(new ClueCharacter("Mrs Peacock", 4, new Pair<>(6, 23)));
-        characterOrder.offer(characters.get(characters.size() - 1));
-
-        characters.add(new ClueCharacter("Prof Plum", 5, new Pair<>(19, 23)));
-        characterOrder.offer(characters.get(characters.size() - 1));
+        characters.add(new ClueCharacter("Miss Scarlett", 0, "S", new Pair<>(24,7)));
+        characters.add(new ClueCharacter("Col Mustard", 1,"M", new Pair<>(17,0)));
+        characters.add(new ClueCharacter("Mrs White", 2,"W",new Pair<>(0,9)));
+        characters.add(new ClueCharacter("Mr Green", 3,"G",new Pair<>(0,14)));
+        characters.add(new ClueCharacter("Mrs Peacock", 4,"C",new Pair<>(6,23)));
+        characters.add(new ClueCharacter("Prof Plum", 5,"P",new Pair<>(19,23)));
+        for(ClueCharacter c :characters) characterOrder.offer(c);
+        allCharacters = new ArrayList<>(characters);
     }
 
     /**
      * Loads weapons into list
      */
     public static void loadWeapons() {
-        weapons.add(new Weapon("Candlestick"));
-        weapons.add(new Weapon("Dagger"));
-        weapons.add(new Weapon("Lead Pipe"));
-        weapons.add(new Weapon("Revolver"));
-        weapons.add(new Weapon("Rope"));
-        weapons.add(new Weapon("Spanner"));
+        weapons.add(new Weapon("Candlestick", "!"));
+        weapons.add(new Weapon("Dagger", "T"));
+        weapons.add(new Weapon("Lead Pipe", "L"));
+        weapons.add(new Weapon("Revolver", "R"));
+        weapons.add(new Weapon("Rope", "&"));
+        weapons.add(new Weapon("Spanner", "F"));
     }
 
     public static void placeCards() {
