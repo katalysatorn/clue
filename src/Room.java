@@ -1,6 +1,15 @@
 import java.util.*;
 
 public class Room extends Card {
+    ClueCharacter character = null;
+    ClueCharacter other = null;
+    Weapon weapon;
+    Weapon otherWeapon;
+    Pair<Integer, Integer> TLSquare;  // top left square, to determine where to start placing the room on the board
+
+    public Room(String roomName, Pair<Integer, Integer> TLSquare) {
+        super(roomName);
+        this.TLSquare = TLSquare;
     private Integer doorNumber = null;
     private List<ClueCharacter> characters = new ArrayList<>();
     private List<Weapon> weapons = new ArrayList<>();
@@ -90,7 +99,13 @@ public class Room extends Card {
             }
         }
     }
-
+    @Override
+    public String getDescription() {
+        if (weapon == null) {
+            return "You've entered the " + this.getName() + " room, there's nothing in here.\n";
+        } else {
+            return "You've entered the " + this.getName() + " room, you see a " + weapon.getDescription() + ".\n";
+        }
     /**
      * Removes character out of room
      */

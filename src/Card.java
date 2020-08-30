@@ -10,7 +10,9 @@ abstract class Card {
         this.name = name;
     }
 
-    protected Card() { }
+    protected Card() {
+        this.name = "";
+}
 
     /**
      * Name of card entity

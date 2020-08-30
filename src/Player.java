@@ -19,8 +19,8 @@ public class Player {
     private ArrayList<Pair<Integer, Integer>> availablePathways = new ArrayList<>();
 
     public Player(String name, ClueCharacter character, Integer number) {
-        clueCharacter = character;
         this.name = name;
+        clueCharacter = character;
         playerNumber = number;
     }
 
@@ -35,7 +35,7 @@ public class Player {
     // Getters
     public String getHand() {
         StringBuilder cards = new StringBuilder("Your cards:\n");
-        for (Card c : hand) cards.append("[").append(c.name).append("] ");
+        for (Card c : hand) cards.append("[").append(c.getName()).append("] ");
         return cards.toString();
     }
 

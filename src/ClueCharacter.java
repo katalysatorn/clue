@@ -1,35 +1,41 @@
 public class ClueCharacter extends Card {
-    private Player player = null;
-
+    protected Player player;
     private final Integer order;
     private Pair<Integer, Integer> location;
-    private Room room;
 
-    public ClueCharacter(String name, int number, String symbol, Pair<Integer,Integer> loc) {
-        super(name,symbol);
-        location = loc;
+    public ClueCharacter(String name, int number, Pair<Integer, Integer> location) {
+        super(name);
         order = number;
+        this.location = location;
     }
+
+    public Integer getOrder() { return order; }
 
     public void addPlayer(Player p) {
         player = p;
     }
 
-    public Integer getOrder() { return order; }
     public Player getPlayer() { return player;}
-    public Pair<Integer, Integer> getLocation(){ return location; }
+    
+    public void setLocation(Pair<Integer, Integer> location) {
+    	this.location = location;
+    }
+    
+    public Pair<Integer, Integer> getLocation(){
+    	return location;
+    }
 
-    public void setLocation(Pair<Integer, Integer> location) { this.location = location; }
-    public void setRoom(Room r) { room = r; }
+    @Override
+    String getDescription() {
+        return "Hi. I am " + super.getName() + ".";
+    }
 
-    //@Override
-    //String getDescription() {
-    //    return "Hi. I am " + super.getName() + ".";
-    //}
+    public boolean playerNotNull() {
+        return player == null;
+    }
 
-    //@Override
-    //public String toString() {
-    //    return name;
-    //}
-
+    @Override
+    public String toString() {
+        return this.getName();
+    }
 }

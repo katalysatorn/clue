@@ -2,6 +2,9 @@ import javax.swing.*;
 import java.util.*;
 
 public class Clue {
+    /**
+     * Cards
+     */
     private static final int MIN_PLAYERS = 3;
     private static final int MAX_PLAYERS = 6;
     private static Suggestion gameSolution;
@@ -9,14 +12,28 @@ public class Clue {
     protected static final ArrayList<Weapon> weapons = new ArrayList<>();
     protected static final ArrayList<Room> rooms = new ArrayList<>();
     protected static final ArrayList<ClueCharacter> characters = new ArrayList<>();
+    private static final int MIN_PLAYERS = 2;
+    private static final int MAX_PLAYERS = 6;
     /**
      * PlayerInfo
      */
     private static final ArrayList<Player> players = new ArrayList<>();
+    /**
+     * Locations
+     */
+    private static final Map<Room, Pair<Integer, Integer>> roomLocations = new HashMap<>();
+    private static final ArrayList<Pair<Integer, Integer>> entranceLocations = new ArrayList<>();
+    private static final Queue<ClueCharacter> characterOrder = new ArrayDeque<>();
+    private static final Queue<Player> playOrder = new ArrayDeque<>();
+    protected static Player currentPlayer;
+    static Card[][] board = new Card[24][25];
+    private static GUI ux;
+    private static ArrayList<ClueCharacter> allCharacters = new ArrayList<>();
+    private static Suggestion gameSolution;
 
     /*      Gaming Order    */
     private static final Queue<ClueCharacter> characterOrder = new ArrayDeque<>();
-    private static final Queue<Player> playOrder = new ArrayDeque<>();
+    private static final Queue<Player> playOrder = new ArrayDeque<>()
 
     /**
      * TODO - Main Clue event loop
@@ -87,24 +104,39 @@ public class Clue {
         deck.addAll(roomCards);
         Collections.shuffle(deck);
         distributeCards(deck);
+        System.out.println("Placing cards on board");
         placeCards();
+        printBoard();
 
-        while (!playOrder.isEmpty()) {
-            if (round()) break;
-        }
+        System.out.println("Game Starting");
+        while (!round());
     }
 
     public static boolean round() {
-        GUI.suggestionBtn.setEnabled(currentPlayer.getCurrentRoom() != null);
-
-        while (!ux.isNextTurn) {
-            // This is where the current players turn goes.
+        if (playOrder.isEmpty()) {
+            return true;
         }
 
-        // This is what happens after the player clicks the end of their turn
+        currentPlayer = playOrder.poll();
+        System.out.println("Current player is: " + currentPlayer.getName());
+        GUI.suggestionBtn.setEnabled(currentPlayer.getCurrentRoom() != null);
+
+        JOptionPane.showConfirmDialog(
+                ux,
+                "Get " + currentPlayer.getName() + " to the screen for their turn",
+                "New Turn",
+                0
+        );
+
+
+        // Pause until nextTurnBtn is clicked
+        while (!ux.isNextTurn);
+
+        // This happens after the next turn button is clicked
+        ux.isNextTurn = false;
 
         if (currentPlayer.canStillPlay()) playOrder.offer(currentPlayer);
-        currentPlayer = playOrder.poll();
+
         return false;
     }
 
@@ -170,13 +202,13 @@ public class Clue {
 
         System.out.print("Characters playing are :\n");
         for (Player p : players) {
-            System.out.printf("\tPlayer %d (%s) %s\n", p.playerNumber, p.name, p.clueCharacter.name);
+            System.out.printf("\tPlayer %d (%s) %s\n", p.playerNumber, p.name, p.clueCharacter.getName());
         }
 
         System.out.print("First player to start is..\nRoll dice..\n");
-        int start = order.get(new Random().nextInt(order.size()));  //Random number
-        Player player = allCharacters.get(start).getPlayer();
-        System.out.printf("~~Player %d (%s): %s~~\n", player.playerNumber, player.name, player.clueCharacter.name);
+        int start = order.get(Dice.r.nextInt(order.size()));  //Random number
+        Player player = allCharacters.get(start).player;
+        System.out.printf("~~Player %d (%s): %s~~\n", player.playerNumber, player.name, player.clueCharacter.getName());
 
         //Sorts out the character order
         while (Objects.requireNonNull(playingCharacters.peek()).getOrder() != start) {
@@ -242,4 +274,227 @@ public class Clue {
         weapons.add(new Weapon("Spanner", "F"));
     }
 
+    public static void placeCards() {
+        placeRooms();
+        setEntrances();
+        placeCharacters();
+    }
+
+    /**
+     * Places room on the board
+     */
+    public static void placeRooms() {
+        for (Map.Entry<Room, Pair<Integer, Integer>> roomPairEntry : roomLocations.entrySet()) {
+            Room room = roomPairEntry.getKey();
+            Pair<Integer, Integer> dimension = roomPairEntry.getValue();
+
+            int height = dimension.getOne();
+            int width = dimension.getTwo();
+
+            int nextRow = room.TLSquare.getOne();  // starting row
+            int nextCol = room.TLSquare.getTwo();  // starting column
+
+            if (room.getName().equals("Middle Room")) {  // Middle room can't be accessed
+                for (int i = 0; i < height; i++) {
+                    for (int j = 0; j < width; j++) {
+                        board[nextRow][nextCol] = new Impassable(true);
+                        nextCol++;
+                    }
+                    nextRow++;
+                    nextCol = room.TLSquare.getTwo();  // need to set back to starting column
+                }
+            } else {  // is a room that can be accessed
+                for (int i = 0; i < height; i++) {
+                    for (int j = 0; j < width; j++) {
+                        board[nextRow][nextCol] = room;
+                        nextCol++;
+                    }
+                    nextRow++;
+                    nextCol = room.TLSquare.getTwo();  // need to set back to starting column
+                }
+            }
+        }
+    }
+
+    /**
+     * Places character on board
+     */
+    public static void placeCharacters() {
+        for (ClueCharacter c : allCharacters) {
+            var loc = c.getLocation();
+
+            board[loc.getOne()][loc.getTwo()] = c;
+        }
+    }
+
+    /**
+     * Loads the entrances to each room on the board
+     */
+    public static void loadEntrances() {
+        entranceLocations.add(new Pair<>(6, 5));
+        entranceLocations.add(new Pair<>(12, 8));
+        entranceLocations.add(new Pair<>(15, 7));
+        entranceLocations.add(new Pair<>(19, 7));
+        entranceLocations.add(new Pair<>(18, 12));
+        entranceLocations.add(new Pair<>(18, 13));
+        entranceLocations.add(new Pair<>(20, 15));
+        entranceLocations.add(new Pair<>(21, 18));
+        entranceLocations.add(new Pair<>(16, 19));
+        entranceLocations.add(new Pair<>(14, 21));
+        entranceLocations.add(new Pair<>(9, 19));
+        entranceLocations.add(new Pair<>(12, 23));
+        entranceLocations.add(new Pair<>(4, 19));
+        entranceLocations.add(new Pair<>(5, 16));
+        entranceLocations.add(new Pair<>(7, 15));
+        entranceLocations.add(new Pair<>(7, 10));
+        entranceLocations.add(new Pair<>(5, 9));
+    }
+
+    /**
+     * Sets the entrance as active on the board, creates a room as well
+     */
+    public static void setEntrances() {
+        for (Pair<Integer, Integer> location : entranceLocations) {
+            int row = location.getOne();
+            int col = location.getTwo();
+            board[row][col] = new Impassable();
+        }
+
+    }
+
+    public static String printBoard() {
+        StringBuilder output = new StringBuilder();
+        for (int row = 0; row < 24; row++) {
+            output.append("|");
+            for (int col = 0; col < 25; col++) {
+                Card cell = board[row][col];
+                if (cell != null) {
+                    output.append(cell.getCharRep()).append("|");
+                } else {
+                    output.append("_|");
+                }
+            }
+            output.append("\n");
+        }
+        return output.toString();
+    }
+
+    /**
+     * Creates game solution by randomly selecting a weapon, room and murderer
+     */
+    public void makeSolution() {
+        // randomly choosing a murder weapon
+        Weapon w = weapons.remove(Dice.r.nextInt(weapons.size()));
+
+        // randomly choosing a murder room
+        Room r = rooms.remove(Dice.r.nextInt(rooms.size()));
+
+        // randomly choosing a murderer
+        ClueCharacter c = characters.remove(Dice.r.nextInt(characters.size()));
+
+        gameSolution = new Suggestion(w, c, r);
+    }
+
+    /**
+     * Deals remaining cards (not including solution cards) to players hands
+     * NOTE: this method must be called after makeSolution()
+     */
+    public void dealCards() {
+        ArrayList<Card> toDeal = new ArrayList<>();
+
+        //add all cards but solution cards to new deck
+        toDeal.addAll(weapons);
+        toDeal.addAll(characters);
+        toDeal.addAll(rooms);
+
+        //shuffle said deck
+        Collections.shuffle(toDeal);
+
+        //deal between players
+        while (!toDeal.isEmpty()) {
+            for (Player p : players) {
+                p.addCard(toDeal.get(toDeal.size() - 1));
+                toDeal.remove(toDeal.size() - 1);
+            }
+        }
+
+    }
+
+    /**
+     * This loops over the players apart from the one that instantiated the suggestion
+     *
+     * @param player player making suggestion
+     * @param other  player involved in suggestion
+     * @param s      suggestion envelope
+     */
+    public void makeSuggestion(Player player, Player other, Suggestion s) {
+        //Move other player to suggested room
+        other.setCurrentRoom(s.getRoom());
+
+        //Move weapon to suggested room
+        s.getWeapon().setRoom(s.getRoom());
+
+
+        for (Player p : playOrder) {
+            if (!p.equals(player)) {
+                ArrayList<Card> matchingCards = new ArrayList<>();
+
+                for (Card c : p.hand) {
+                    if (c == s.character || c == s.room || c == s.weapon) {
+                        matchingCards.add(c);
+                    }
+                }
+
+                getPlayerToScreen(p);
+
+                if (!matchingCards.isEmpty()) {
+                    System.out.println("You can refute with the following cards: ");
+                    System.out.println("(0) - None");
+                    for (int i = 0; i < matchingCards.size(); i++) {
+                        System.out.printf("(%d) - %s\n", i + 1, matchingCards.get(i));
+                    }
+
+                    System.out.println("\nChoose a card to refute with:");
+                    int refIndex = 0;
+
+                    if (refIndex != 0) p.refuteCard = matchingCards.get(refIndex - 1);
+                } else {
+                    System.out.println("You have no cards to refute with");
+                }
+            }
+        }
+
+        // Now relay the refute cards
+        for (Player p : playOrder) {
+            if (p.refuteCard != null) {
+                System.out.printf("%s has refuted with card \"%s\"\n", p.name, p.refuteCard);
+            }
+
+            p.refuteCard = null;
+        }
+
+        //Player can choose to make an accusation
+        System.out.print("Enter 'Y' if you would like to make an accusation that " + s.getCharacter().toString()
+                + " committed a murder using " + s.getWeapon().toString() + " in " + s.getRoom().toString());
+
+        if (true) {
+            //Make accusation
+            makeAccusation(s);
+        }
+
+        //Game resumes
+    }
+
+    //Players accusation is incorrect and they get kicked out of the game
+
+    public void makeAccusation(Suggestion s) {
+        if (s == gameSolution) {
+            //PLAYER WINS
+        }
+    }
+
+    public void getPlayerToScreen(Player p) {
+        System.out.println("\n\n\n\n");
+        System.out.println("Player " + p.name + "'s turn.\n (Click to continue)");
+    }
 }
