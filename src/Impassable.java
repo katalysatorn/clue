@@ -7,6 +7,7 @@ public class Impassable extends Card {
     public Impassable(boolean showPassable) {
         this.showPassable = showPassable;
     }
+    public Impassable() { this.showPassable = true; }
 
     public boolean getPassable() { return showPassable;}
 
@@ -16,5 +17,10 @@ public class Impassable extends Card {
         if(showPassable) s = "_";
         else s = "#";
         return s;
+    }
+
+    @Override
+    String getDescription() {
+        return "";
     }
 }

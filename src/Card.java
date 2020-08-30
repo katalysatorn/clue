@@ -28,9 +28,9 @@ abstract class Card {
      */
     public String getSymbol() { return symbol;}
 
-   // /**
-   // * @return a human-readable description of the Card
-   //  */
-   // abstract String getDescription();
+    /**
+    * @return a human-readable description of the Card
+     */
+    abstract String getDescription();
 
 }

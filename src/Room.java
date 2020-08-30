@@ -8,8 +8,10 @@ public class Room extends Card {
     Pair<Integer, Integer> TLSquare;  // top left square, to determine where to start placing the room on the board
 
     public Room(String roomName, Pair<Integer, Integer> TLSquare) {
-        super(roomName);
+        super(roomName, roomName.substring(0, 1));
         this.TLSquare = TLSquare;
+    }
+
     private Integer doorNumber = null;
     private List<ClueCharacter> characters = new ArrayList<>();
     private List<Weapon> weapons = new ArrayList<>();
@@ -49,7 +51,7 @@ public class Room extends Card {
      */
     public void addCharacter(ClueCharacter character) {
         characters.add(character);  //Room knows who is in the room
-        character.setRoom(this);    //Characters knows they are in room
+        character.setCurrentRoom(this);    //Characters knows they are in room
         boolean taken = false;      //Check if tile in room not taken
         while(!taken) {
             Pair<Integer, Integer> tile = randomSquare();
@@ -99,17 +101,19 @@ public class Room extends Card {
             }
         }
     }
-    @Override
+
     public String getDescription() {
         if (weapon == null) {
             return "You've entered the " + this.getName() + " room, there's nothing in here.\n";
         } else {
             return "You've entered the " + this.getName() + " room, you see a " + weapon.getDescription() + ".\n";
         }
+    }
+
     /**
      * Removes character out of room
      */
-    public void removeCharacter(ClueCharacter ch){
+    public void removeCharacter(ClueCharacter ch) {
         characters.removeIf(c -> c.equals(ch));                     //Room removes the character
 
         //Player goes out of room, Player records room as the "Previous Room"
@@ -120,7 +124,7 @@ public class Room extends Card {
                 c.getKey().setCharacter(null);                      //Tile removes character position
             }
         }
-        ch.setRoom(null);                                           //Character removes the room
+        ch.setCurrentRoom(null);                                           //Character removes the room
     }
 
     /**

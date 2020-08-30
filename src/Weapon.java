@@ -9,4 +9,8 @@ public class Weapon extends Card {
         room = r;
     }
 
+    @Override
+    String getDescription() {
+        return super.getName();
+    }
 }

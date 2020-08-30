@@ -12,8 +12,6 @@ public class Clue {
     protected static final ArrayList<Weapon> weapons = new ArrayList<>();
     protected static final ArrayList<Room> rooms = new ArrayList<>();
     protected static final ArrayList<ClueCharacter> characters = new ArrayList<>();
-    private static final int MIN_PLAYERS = 2;
-    private static final int MAX_PLAYERS = 6;
     /**
      * PlayerInfo
      */
@@ -27,13 +25,7 @@ public class Clue {
     private static final Queue<Player> playOrder = new ArrayDeque<>();
     protected static Player currentPlayer;
     static Card[][] board = new Card[24][25];
-    private static GUI ux;
     private static ArrayList<ClueCharacter> allCharacters = new ArrayList<>();
-    private static Suggestion gameSolution;
-
-    /*      Gaming Order    */
-    private static final Queue<ClueCharacter> characterOrder = new ArrayDeque<>();
-    private static final Queue<Player> playOrder = new ArrayDeque<>()
 
     /**
      * TODO - Main Clue event loop
@@ -288,11 +280,11 @@ public class Clue {
             Room room = roomPairEntry.getKey();
             Pair<Integer, Integer> dimension = roomPairEntry.getValue();
 
-            int height = dimension.getOne();
-            int width = dimension.getTwo();
+            int height = dimension.getX();
+            int width = dimension.getY();
 
-            int nextRow = room.TLSquare.getOne();  // starting row
-            int nextCol = room.TLSquare.getTwo();  // starting column
+            int nextRow = room.TLSquare.getX();  // starting row
+            int nextCol = room.TLSquare.getY();  // starting column
 
             if (room.getName().equals("Middle Room")) {  // Middle room can't be accessed
                 for (int i = 0; i < height; i++) {
@@ -301,7 +293,7 @@ public class Clue {
                         nextCol++;
                     }
                     nextRow++;
-                    nextCol = room.TLSquare.getTwo();  // need to set back to starting column
+                    nextCol = room.TLSquare.getY();  // need to set back to starting column
                 }
             } else {  // is a room that can be accessed
                 for (int i = 0; i < height; i++) {
@@ -310,7 +302,7 @@ public class Clue {
                         nextCol++;
                     }
                     nextRow++;
-                    nextCol = room.TLSquare.getTwo();  // need to set back to starting column
+                    nextCol = room.TLSquare.getY();  // need to set back to starting column
                 }
             }
         }
@@ -323,7 +315,7 @@ public class Clue {
         for (ClueCharacter c : allCharacters) {
             var loc = c.getLocation();
 
-            board[loc.getOne()][loc.getTwo()] = c;
+            board[loc.getX()][loc.getY()] = c;
         }
     }
 
@@ -355,8 +347,8 @@ public class Clue {
      */
     public static void setEntrances() {
         for (Pair<Integer, Integer> location : entranceLocations) {
-            int row = location.getOne();
-            int col = location.getTwo();
+            int row = location.getX();
+            int col = location.getY();
             board[row][col] = new Impassable();
         }
 
@@ -369,7 +361,7 @@ public class Clue {
             for (int col = 0; col < 25; col++) {
                 Card cell = board[row][col];
                 if (cell != null) {
-                    output.append(cell.getCharRep()).append("|");
+                    output.append(cell.getSymbol()).append("|");
                 } else {
                     output.append("_|");
                 }
@@ -420,70 +412,70 @@ public class Clue {
 
     }
 
-    /**
-     * This loops over the players apart from the one that instantiated the suggestion
-     *
-     * @param player player making suggestion
-     * @param other  player involved in suggestion
-     * @param s      suggestion envelope
-     */
-    public void makeSuggestion(Player player, Player other, Suggestion s) {
-        //Move other player to suggested room
-        other.setCurrentRoom(s.getRoom());
-
-        //Move weapon to suggested room
-        s.getWeapon().setRoom(s.getRoom());
-
-
-        for (Player p : playOrder) {
-            if (!p.equals(player)) {
-                ArrayList<Card> matchingCards = new ArrayList<>();
-
-                for (Card c : p.hand) {
-                    if (c == s.character || c == s.room || c == s.weapon) {
-                        matchingCards.add(c);
-                    }
-                }
-
-                getPlayerToScreen(p);
-
-                if (!matchingCards.isEmpty()) {
-                    System.out.println("You can refute with the following cards: ");
-                    System.out.println("(0) - None");
-                    for (int i = 0; i < matchingCards.size(); i++) {
-                        System.out.printf("(%d) - %s\n", i + 1, matchingCards.get(i));
-                    }
-
-                    System.out.println("\nChoose a card to refute with:");
-                    int refIndex = 0;
-
-                    if (refIndex != 0) p.refuteCard = matchingCards.get(refIndex - 1);
-                } else {
-                    System.out.println("You have no cards to refute with");
-                }
-            }
-        }
-
-        // Now relay the refute cards
-        for (Player p : playOrder) {
-            if (p.refuteCard != null) {
-                System.out.printf("%s has refuted with card \"%s\"\n", p.name, p.refuteCard);
-            }
-
-            p.refuteCard = null;
-        }
-
-        //Player can choose to make an accusation
-        System.out.print("Enter 'Y' if you would like to make an accusation that " + s.getCharacter().toString()
-                + " committed a murder using " + s.getWeapon().toString() + " in " + s.getRoom().toString());
-
-        if (true) {
-            //Make accusation
-            makeAccusation(s);
-        }
-
-        //Game resumes
-    }
+//    /**
+//     * This loops over the players apart from the one that instantiated the suggestion
+//     *
+//     * @param player player making suggestion
+//     * @param other  player involved in suggestion
+//     * @param s      suggestion envelope
+//     */
+//    public void makeSuggestion(Player player, Player other, Suggestion s) {
+//        //Move other player to suggested room
+//        other.setCurrentRoom(s.getRoom());
+//
+//        //Move weapon to suggested room
+//        s.getWeapon().setRoom(s.getRoom());
+//
+//
+//        for (Player p : playOrder) {
+//            if (!p.equals(player)) {
+//                ArrayList<Card> matchingCards = new ArrayList<>();
+//
+//                for (Card c : p.hand) {
+//                    if (c == s.character || c == s.room || c == s.weapon) {
+//                        matchingCards.add(c);
+//                    }
+//                }
+//
+//                getPlayerToScreen(p);
+//
+//                if (!matchingCards.isEmpty()) {
+//                    System.out.println("You can refute with the following cards: ");
+//                    System.out.println("(0) - None");
+//                    for (int i = 0; i < matchingCards.size(); i++) {
+//                        System.out.printf("(%d) - %s\n", i + 1, matchingCards.get(i));
+//                    }
+//
+//                    System.out.println("\nChoose a card to refute with:");
+//                    int refIndex = 0;
+//
+//                    if (refIndex != 0) p.refuteCard = matchingCards.get(refIndex - 1);
+//                } else {
+//                    System.out.println("You have no cards to refute with");
+//                }
+//            }
+//        }
+//
+//        // Now relay the refute cards
+//        for (Player p : playOrder) {
+//            if (p.refuteCard != null) {
+//                System.out.printf("%s has refuted with card \"%s\"\n", p.name, p.refuteCard);
+//            }
+//
+//            p.refuteCard = null;
+//        }
+//
+//        //Player can choose to make an accusation
+//        System.out.print("Enter 'Y' if you would like to make an accusation that " + s.getCharacter().toString()
+//                + " committed a murder using " + s.getWeapon().toString() + " in " + s.getRoom().toString());
+//
+//        if (true) {
+//            //Make accusation
+//            makeAccusation(s);
+//        }
+//
+//        //Game resumes
+//    }
 
     //Players accusation is incorrect and they get kicked out of the game
 
